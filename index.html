@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ride-Sharing Application: An Object-Oriented Design Approach</title>
+<meta name="description" content="An object-oriented design of a ride-sharing app using inheritance and polymorphism, by Nisarg Pandya, AMTICS, Uka Tarsadia University.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6FB; --panel:#FFFFFF; --ink:#151A33; --muted:#59607F; --line:#D9DEEC;
+  --indigo:#3A2E7E; --accent:#D62F6F; --code:#ECEFF8; --soft:#EEEAFB;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1226; --panel:#171B38; --ink:#ECEFFA; --muted:#9AA1C4; --line:#272C52;
+    --indigo:#9C8CFF; --accent:#FF6B9A; --code:#1E2347; --soft:#221E4A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1226; --panel:#171B38; --ink:#ECEFFA; --muted:#9AA1C4; --line:#272C52;
+  --indigo:#9C8CFF; --accent:#FF6B9A; --code:#1E2347; --soft:#221E4A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--indigo)}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code);padding:.1em .38em;border-radius:4px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:20px;height:56px}
+.bar b{font-family:var(--display);font-weight:700;font-size:1.02rem;white-space:nowrap}
+.bar nav{display:flex;gap:18px;overflow-x:auto;margin-left:auto;scrollbar-width:none}
+.bar nav a{color:var(--muted);text-decoration:none;font-size:.9rem;white-space:nowrap;font-weight:500}
+.bar nav a:hover{color:var(--ink)}
+.bar button{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:5px 10px;font:inherit;font-size:.85rem;cursor:pointer}
+
+/* hero */
+.hero{padding:56px 0 48px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:44px;align-items:start}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,4.2vw,3.2rem);line-height:1.08;letter-spacing:-.02em;margin:0 0 18px}
+.who{color:var(--muted);margin:0 0 22px}
+.who strong{color:var(--ink);font-weight:600}
+.lede{font-size:1.12rem;max-width:36em;margin:0 0 24px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;font-weight:600;text-decoration:none;border:1.5px solid var(--indigo);color:var(--indigo)}
+.btn.primary{background:var(--indigo);color:var(--bg)}
+.btn:hover{border-color:var(--accent)}
+
+/* demo */
+.demo{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:20px}
+.demo h2{font-family:var(--display);font-size:1.15rem;margin:0 0 2px}
+.demo p.sub{margin:0 0 16px;color:var(--muted);font-size:.93rem}
+.ctrl{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin-bottom:14px}
+.ctrl label{display:flex;flex-direction:column;font-size:.82rem;color:var(--muted);gap:4px;font-weight:500}
+.ctrl select,.ctrl input[type=range]{width:100%}
+.ctrl select{font:inherit;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.ctrl input[type=range]{accent-color:var(--accent)}
+.ctrl output{color:var(--ink);font-weight:600}
+.seq{background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.seq svg{display:block;width:100%;min-width:520px;height:auto}
+.result{margin-top:14px;display:grid;gap:8px;font-size:.93rem}
+.result div{background:var(--code);border-radius:8px;padding:9px 12px}
+.result b{font-weight:600}
+.result .fare{font-family:var(--display);font-size:1.5rem;font-weight:700;color:var(--accent);line-height:1.2}
+
+/* sections */
+section.s{padding:56px 0;border-top:1px solid var(--line)}
+section.s .wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px}
+section.s h2{font-family:var(--display);font-size:1.55rem;line-height:1.2;margin:0;position:sticky;top:76px;align-self:start;letter-spacing:-.01em}
+.body>*:first-child{margin-top:0}
+.body p{max-width:42em}
+.body ul{padding-left:1.2em;max-width:44em}
+.body li{margin:.5em 0}
+.body li::marker{color:var(--accent)}
+
+/* OOD focus rows */
+.focus{display:grid;gap:0;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.focus div{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:16px 20px;border-top:1px solid var(--line)}
+.focus div:first-child{border-top:0}
+.focus dt{font-family:var(--display);font-weight:700;color:var(--indigo)}
+.focus dd{margin:0}
+.chain{display:block;font-family:var(--mono);font-size:.84rem;color:var(--muted);margin-top:4px}
+
+/* UML */
+.uml{background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:12px;overflow-x:auto}
+.uml svg{display:block;width:100%;min-width:760px;height:auto}
+.uml text{font-family:var(--body);fill:var(--ink)}
+.uml .box{fill:var(--panel);stroke:var(--indigo);stroke-width:1.5}
+.uml .hd{fill:var(--soft)}
+.uml .abs .box{stroke-dasharray:none}
+.uml .ln{stroke:var(--indigo);stroke-width:1.3;fill:none}
+.uml .tri{fill:var(--panel);stroke:var(--indigo);stroke-width:1.3}
+.uml .mult{font-size:11px;fill:var(--muted)}
+.uml .nm{font-weight:700;font-size:13px}
+.uml .st{font-size:10px;font-style:italic;fill:var(--muted)}
+.uml .at{font-size:11px;font-family:var(--mono);fill:var(--muted)}
+.uml .mt{font-size:11px;font-family:var(--mono)}
+.note{margin-top:16px}
+
+.callout{border-left:4px solid var(--accent);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;max-width:44em}
+
+/* two-col list blocks */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 36px}
+.future li strong{font-weight:600}
+
+footer{border-top:1px solid var(--line);padding:36px 0 56px;color:var(--muted);font-size:.95rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 32px;justify-content:space-between}
+
+@media (max-width:860px){
+  .hero .wrap{grid-template-columns:1fr}
+  section.s .wrap{grid-template-columns:1fr;gap:18px}
+  section.s h2{position:static}
+  .grid2{grid-template-columns:1fr}
+  .focus div{grid-template-columns:1fr;gap:4px}
+  .bar nav{display:none}
+  .bar button{margin-left:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <b>Ride-Sharing OOD</b>
+    <nav aria-label="Sections">
+      <a href="#scenario">Scenario</a>
+      <a href="#problem">Problem</a>
+      <a href="#focus">Focus</a>
+      <a href="#model">Class diagram</a>
+      <a href="#quality">Impact</a>
+      <a href="#future">Future</a>
+    </nav>
+    <button id="theme" type="button" aria-label="Switch colour theme">Theme</button>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Ride-Sharing Application: An Object-Oriented Design Approach</h1>
+      <p class="who"><strong>Nisarg Pandya</strong> (202303103510361)<br>AMTICS, Uka Tarsadia University</p>
+      <p class="lede">Tapping “Book Ride” feels like one action. Behind it, a rider, a driver, a vehicle and a payment all cooperate. This project models them with inheritance and polymorphism, so a new vehicle or payment mode never means rewriting the booking logic.</p>
+      <div class="cta">
+        <a class="btn primary" href="#model">See the class diagram</a>
+        <a class="btn" href="https://github.com/nisargpandya240/Ride-Sharing">View source on GitHub</a>
+      </div>
+    </div>
+
+    <div class="demo" id="demo">
+      <h2>Same call, different behaviour</h2>
+      <p class="sub">Pick a vehicle and a payment mode. <code>Ride</code> makes the same two calls every time; the object behind them decides what runs.</p>
+      <div class="ctrl">
+        <label>Vehicle
+          <select id="veh"><option value="Bike">Bike</option><option value="Auto">Auto</option><option value="Cab" selected>Cab</option></select>
+        </label>
+        <label>Payment
+          <select id="pay"><option value="Cash">CashPayment</option><option value="Upi" selected>UpiPayment</option><option value="Card">CardPayment</option></select>
+        </label>
+        <label>Distance <output id="kmOut">8 km</output>
+          <input id="km" type="range" min="1" max="30" value="8">
+        </label>
+        <label>Duration <output id="minOut">20 min</output>
+          <input id="min" type="range" min="3" max="90" value="20">
+        </label>
+      </div>
+      <div class="seq" id="seq" role="img" aria-label="Sequence diagram of one ride"></div>
+      <div class="result" aria-live="polite">
+        <div><span class="fare" id="fare"></span></div>
+        <div id="fareWhy"></div>
+        <div id="payWhy"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="scenario">
+  <div class="wrap">
+    <h2>Real-world scenario</h2>
+    <div class="body">
+      <p>Tapping “Book Ride” feels like one action, but behind it a whole cast of objects cooperates. A rider requests a trip, the system picks a nearby driver, matches a vehicle – bike, auto or cab – estimates the fare, tracks the journey and finally settles the payment.</p>
+      <p>Every one of these actors behaves slightly differently, yet the app must treat them in one uniform way. This project models that with <strong>inheritance</strong> and <strong>polymorphism</strong>, so a new vehicle type or payment mode never means rewriting the booking logic.</p>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="problem">
+  <div class="wrap">
+    <h2>Problem statement</h2>
+    <div class="body">
+      <p>A ride-sharing app runs into recurring design problems:</p>
+      <ul>
+        <li>Riders and drivers share many fields (name, phone, login) – copy-pasting them invites bugs</li>
+        <li>Fare rules differ per vehicle type, so long <code>if-else</code> chains keep growing</li>
+        <li>Payments come in many forms – cash, UPI, card – each with its own steps</li>
+        <li>Every new vehicle or payment mode forces edits in code that already works</li>
+      </ul>
+      <p class="callout">An object-oriented design gives each concern its own class, so the app can grow without turning into a tangle of conditionals.</p>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="focus">
+  <div class="wrap">
+    <h2>OOD focus: inheritance &amp; polymorphism</h2>
+    <div class="body">
+      <p>The object model is built around two core ideas, each tied to an actual decision made for this project.</p>
+      <dl class="focus">
+        <div><dt>Inheritance</dt><dd>Shared state is written once, in the parent.<span class="chain">User → Rider / Driver<br>Vehicle → Bike / Auto / Cab<br>Payment → Cash / Upi / Card</span></dd></div>
+        <div><dt>Polymorphism</dt><dd>Each <code>Vehicle</code> subclass overrides <code>calculateFare()</code>; each <code>Payment</code> subclass overrides <code>pay()</code>. The right version runs at runtime.</dd></div>
+        <div><dt>Abstraction</dt><dd><code>User</code>, <code>Vehicle</code> and <code>Payment</code> are abstract: they define a contract, not a real object.</dd></div>
+        <div><dt>Association</dt><dd><code>Ride</code> links a Rider, a Driver, a Vehicle and a Payment (collaboration, not inheritance).</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="objectives">
+  <div class="wrap">
+    <h2>Objectives</h2>
+    <div class="body">
+      <ul>
+        <li>Model ride booking as a set of cooperating classes, not one monolithic script</li>
+        <li>Use inheritance to move shared fields and behaviour into abstract parent classes</li>
+        <li>Let <code>Ride</code> call <code>calculateFare()</code> and <code>pay()</code> without knowing the concrete type</li>
+        <li>Replace type-checking <code>if-else</code> blocks with method overriding</li>
+        <li>Show how the design stays open to new vehicles and payment modes</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="principles">
+  <div class="wrap">
+    <h2>Principles applied</h2>
+    <div class="body">
+      <ul>
+        <li><strong>Encapsulation</strong> – rates, rating and ride status stay private behind public methods</li>
+        <li><strong>Abstraction</strong> – abstract parents hide the details of each concrete type</li>
+        <li><strong>Liskov Substitution</strong> – a Bike, Auto or Cab can stand in anywhere a Vehicle is expected</li>
+        <li><strong>Open/Closed</strong> – extend by adding subclasses, not by editing <code>Ride</code></li>
+        <li><strong>High cohesion, low coupling</strong> – <code>Ride</code> depends only on abstract types</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="model">
+  <div class="wrap">
+    <h2>UML class diagram</h2>
+    <div class="body">
+      <div class="uml"><svg id="uml" viewBox="0 0 960 790" role="img" aria-label="UML class diagram of User, Vehicle, Ride and Payment hierarchies"></svg></div>
+      <p class="note"><strong>Reading the model.</strong> <code>User</code>, <code>Rider</code> and <code>Driver</code> form one inheritance ladder; <code>Vehicle</code> with Bike, Auto and Cab forms a second, and <code>Payment</code> with its three modes a third. <code>Ride</code> is the hub – it holds a rider, a driver, a vehicle and a payment, but only through the <strong>abstract parent types</strong>. When <code>Ride</code> calls <code>vehicle.calculateFare()</code>, the version that runs depends on the real object behind it – that late binding is runtime polymorphism.</p>
+      <p class="callout">The sequence diagram in the live demo above shows this: the runtime type (<code>:Cab</code>, <code>:Bike</code>, <code>:Auto</code>) decides which <code>calculateFare()</code> runs – likewise for <code>:UpiPayment</code> and <code>:CashPayment</code>. <code>Ride</code> only talks to the abstract <code>Vehicle</code> and <code>Payment</code> types. Swap one concrete object for another and the sequence stays identical; only the overridden method bodies change.</p>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="quality">
+  <div class="wrap">
+    <h2>Impact &amp; quality assurance</h2>
+    <div class="body">
+      <ul>
+        <li><strong>Isolated testing</strong> – each fare class is tested alone; <code>Ride</code> is tested with a stub vehicle returning a fixed fare</li>
+        <li><strong>Maintainability</strong> – a change in cab pricing touches the <code>Cab</code> class only</li>
+        <li><strong>Open/Closed Principle</strong> – a new <code>ElectricScooter</code> needs one extra subclass; <code>Ride</code> and <code>Payment</code> stay untouched</li>
+        <li><strong>Reusability</strong> – login and profile code is written once in <code>User</code> and reused by Rider and Driver</li>
+        <li><strong>Scalability</strong> – new cities or vehicle types add classes, not conditionals</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="future">
+  <div class="wrap">
+    <h2>Future scope</h2>
+    <div class="body future">
+      <ul>
+        <li><strong>AI-based matching</strong> – a demand-prediction model pairs riders with the best nearby driver and ETA</li>
+        <li><strong>Dynamic pricing</strong> – surge and discount rules added as new fare subclasses, with no change to <code>Ride</code></li>
+        <li><strong>Cloud deployment</strong> – ride, payment and notification modules scaled independently as microservices</li>
+        <li><strong>IoT &amp; GPS</strong> – vehicle sensors stream live location and speed into the <code>Vehicle</code> objects</li>
+        <li><strong>EV &amp; new vehicles</strong> – an <code>ElectricScooter</code> is just one more <code>Vehicle</code> subclass</li>
+        <li><strong>New payments</strong> – <code>WalletPayment</code> or other modes plug in beside the existing three</li>
+        <li><strong>Ride pooling &amp; safety</strong> – shared rides, SOS button and route-deviation alerts</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="conclusion">
+  <div class="wrap">
+    <h2>Conclusion</h2>
+    <div class="body">
+      <p>Building the ride-sharing app around abstract parents and specialised children – inheritance for shared state and behaviour, polymorphism for type-specific fares and payments – keeps the code testable today and easy to extend tomorrow, whether that means a new vehicle, a new payment mode or a new city.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><strong>Nisarg Pandya</strong> (202303103510361)<br>AMTICS, Uka Tarsadia University · Object-Oriented Software Design</div>
+    <div><a href="https://github.com/nisargpandya240/Ride-Sharing">github.com/nisargpandya240/Ride-Sharing</a></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var NS="http://www.w3.org/2000/svg";
+
+  /* ---------- Theme toggle ---------- */
+  var root=document.documentElement, tbtn=document.getElementById("theme");
+  tbtn.addEventListener("click",function(){
+    var dark=root.getAttribute("data-theme")==="dark"||(!root.getAttribute("data-theme")&&matchMedia("(prefers-color-scheme: dark)").matches);
+    root.setAttribute("data-theme",dark?"light":"dark");
+  });
+
+  /* ---------- The object model, in code (mirrors the UML) ---------- */
+  function Vehicle(){}                                   // abstract
+  Vehicle.prototype.calculateFare=function(){throw new Error("abstract");};
+  function Bike(){} Bike.prototype=Object.create(Vehicle.prototype);
+  Bike.prototype.calculateFare=function(km,min){return 20+6*km+0.5*min;};
+  Bike.prototype.how=function(km,min){return "₹20 base + ₹6/km + ₹0.5/min";};
+  function Auto(){} Auto.prototype=Object.create(Vehicle.prototype);
+  Auto.prototype.calculateFare=function(km,min){return Math.max(40,30+11*km+1*min);};
+  Auto.prototype.how=function(){return "₹30 base + ₹11/km + ₹1/min, minimum ₹40";};
+  function Cab(){} Cab.prototype=Object.create(Vehicle.prototype);
+  Cab.prototype.calculateFare=function(km,min){return (50+15*km+1.5*min)*1.05;};
+  Cab.prototype.how=function(){return "₹50 base + ₹15/km + ₹1.5/min, plus 5% tax";};
+
+  function Payment(){}                                   // abstract
+  Payment.prototype.pay=function(){throw new Error("abstract");};
+  function CashPayment(){} CashPayment.prototype=Object.create(Payment.prototype);
+  CashPayment.prototype.pay=function(a){return "Driver collects ₹"+a+" in cash and hands over a paper receipt.";};
+  function UpiPayment(){} UpiPayment.prototype=Object.create(Payment.prototype);
+  UpiPayment.prototype.pay=function(a){return "UPI request for ₹"+a+" sent to the rider’s UPI ID; receipt UPI-"+(1000+a*7)+" issued.";};
+  function CardPayment(){} CardPayment.prototype=Object.create(Payment.prototype);
+  CardPayment.prototype.pay=function(a){return "Card ending 4242 charged ₹"+a+"; receipt emailed.";};
+
+  function Ride(vehicle,payment){this.vehicle=vehicle;this.payment=payment;}
+  Ride.prototype.complete=function(km,min){
+    var fare=Math.round(this.vehicle.calculateFare(km,min));   // no type checks
+    var receipt=this.payment.pay(fare);                        // no type checks
+    return {fare:fare,receipt:receipt};
+  };
+
+  var vehicles={Bike:new Bike(),Auto:new Auto(),Cab:new Cab()};
+  var vehNames={Bike:"Bike",Auto:"Auto",Cab:"Cab"};
+  var payments={Cash:new CashPayment(),Upi:new UpiPayment(),Card:new CardPayment()};
+  var payNames={Cash:"CashPayment",Upi:"UpiPayment",Card:"CardPayment"};
+
+  /* ---------- Sequence diagram (re-drawn on every change) ---------- */
+  function el(tag,attrs,text,parent){
+    var n=document.createElementNS(NS,tag);
+    for(var k in attrs){n.setAttribute(k,attrs[k]);}
+    if(text!=null){n.textContent=text;}
+    if(parent){parent.appendChild(n);}
+    return n;
+  }
+  function drawSeq(host,v,p,fare){
+    host.textContent="";
+    var s=el("svg",{viewBox:"0 0 640 372"},null,host);
+    var defs=el("defs",{},null,s);
+    var m=el("marker",{id:"ah",viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},null,defs);
+    el("path",{d:"M0,1 L10,5 L0,9 z",fill:"var(--ink)"},null,m);
+    var X={r:78,ride:240,v:402,p:564}, names=[[X.r,":Rider",0],[X.ride,":Ride",0],[X.v,":"+vehNames[v],1],[X.p,":"+payNames[p],1]];
+    names.forEach(function(n){
+      el("rect",{x:n[0]-62,y:10,width:124,height:30,rx:5,fill:n[2]?"var(--soft)":"var(--panel)",stroke:n[2]?"var(--accent)":"var(--indigo)","stroke-width":n[2]?2:1.3},null,s);
+      el("text",{x:n[0],y:30,"text-anchor":"middle","font-size":13,"font-weight":700,fill:"var(--ink)","font-family":"var(--body)"},n[1],s);
+      el("line",{x1:n[0],y1:40,x2:n[0],y2:362,stroke:"var(--muted)","stroke-dasharray":"4 4","stroke-width":1},null,s);
+    });
+    function msg(y,x1,x2,label,ret,hot){
+      el("line",{x1:x1,y1:y,x2:x2,y2:y,stroke:"var(--ink)","stroke-width":1.4,"stroke-dasharray":ret?"5 3":"0","marker-end":"url(#ah)"},null,s);
+      var mx=(x1+x2)/2;
+      el("text",{x:mx,y:y-6,"text-anchor":"middle","font-size":12,"font-family":"var(--body)","font-style":ret?"italic":"normal","font-weight":hot?700:400,fill:hot?"var(--accent)":"var(--ink)"},label,s);
+    }
+    msg(70,X.r,X.ride-4,"1: requestRide()");
+    el("path",{d:"M"+X.ride+",100 h34 v22 h-30",fill:"none",stroke:"var(--ink)","stroke-width":1.4,"marker-end":"url(#ah)"},null,s);
+    el("text",{x:X.ride+40,y:116,"font-size":12,"font-family":"var(--body)",fill:"var(--ink)"},"2: assignDriver()",s);
+    msg(170,X.ride,X.v-4,"3: calculateFare()",false,true);
+    msg(204,X.v,X.ride+4,"4: ₹"+fare,true);
+    msg(256,X.ride,X.p-4,"5: pay(₹"+fare+")",false,true);
+    msg(290,X.p,X.ride+4,"6: receipt",true);
+    msg(338,X.ride,X.r+4,"7: rideConfirmed()",true);
+    var note=el("text",{x:320,y:366,"text-anchor":"middle","font-size":10.5,fill:"var(--muted)","font-family":"var(--body)"},"Highlighted calls are polymorphic: the object on the right decides what runs.",s);
+    note.setAttribute("visibility","hidden");
+  }
+
+  var seq=document.getElementById("seq");
+  var selV=document.getElementById("veh"), selP=document.getElementById("pay");
+  var rKm=document.getElementById("km"), rMin=document.getElementById("min");
+  function update(){
+    var km=+rKm.value, min=+rMin.value;
+    document.getElementById("kmOut").textContent=km+" km";
+    document.getElementById("minOut").textContent=min+" min";
+    var v=vehicles[selV.value], p=payments[selP.value];
+    var ride=new Ride(v,p);
+    var r=ride.complete(km,min);
+    drawSeq(seq,selV.value,selP.value,r.fare);
+    document.getElementById("fare").textContent="Fare ₹"+r.fare;
+    document.getElementById("fareWhy").textContent=vehNames[selV.value]+".calculateFare() ran: "+v.how(km,min)+".";
+    document.getElementById("payWhy").textContent=payNames[selP.value]+".pay() ran: "+r.receipt;
+  }
+  [selV,selP,rKm,rMin].forEach(function(c){c.addEventListener("input",update);});
+  update();
+
+  /* ---------- UML class diagram (generated from data) ---------- */
+  var u=document.getElementById("uml");
+  function box(x,y,w,name,stereo,attrs,methods,abs){
+    var line=15, head=stereo?44:30;
+    var ah=attrs.length?attrs.length*line+10:8, mh=methods.length?methods.length*line+10:8;
+    var h=head+ah+mh, g=el("g",{},null,u);
+    el("rect",{class:"box",x:x,y:y,width:w,height:h,rx:3},null,g);
+    el("rect",{class:"hd",x:x+1,y:y+1,width:w-2,height:head-1,rx:2},null,g);
+    if(stereo){el("text",{class:"st",x:x+w/2,y:y+15,"text-anchor":"middle"},"«"+stereo+"»",g);}
+    var nm=el("text",{class:"nm",x:x+w/2,y:y+(stereo?34:20),"text-anchor":"middle"},name,g);
+    if(abs){nm.setAttribute("font-style","italic");}
+    el("line",{class:"ln",x1:x,y1:y+head,x2:x+w,y2:y+head},null,g);
+    attrs.forEach(function(a,i){el("text",{class:"at",x:x+8,y:y+head+16+i*line},a,g);});
+    el("line",{class:"ln",x1:x,y1:y+head+ah,x2:x+w,y2:y+head+ah},null,g);
+    methods.forEach(function(a,i){el("text",{class:"mt",x:x+8,y:y+head+ah+16+i*line},a,g);});
+    return {x:x,y:y,w:w,h:h,cx:x+w/2,b:y+h,r:x+w};
+  }
+  function path(d){el("path",{class:"ln",d:d},null,u);}
+  function tri(cx,y){el("path",{class:"tri",d:"M"+cx+","+y+" l-10,16 h20 z"},null,u);}
+  function label(x,y,t,anchor){el("text",{class:"mult",x:x,y:y,"text-anchor":anchor||"start"},t,u);}
+  function inherit(parent,kids){
+    var ty=parent.b; tri(parent.cx,ty);
+    var busY=ty+34; path("M"+parent.cx+","+(ty+16)+" V"+busY);
+    var xs=kids.map(function(k){return k.cx;}); path("M"+Math.min.apply(null,xs)+","+busY+" H"+Math.max.apply(null,xs));
+    kids.forEach(function(k){path("M"+k.cx+","+busY+" V"+k.y);});
+  }
+
+  var user=box(70,10,200,"User","abstract",["- userId: String","- name: String","- phone: String"],["+ login()","+ getProfile()"],true);
+  var ky=user.b+54;
+  var rider=box(0,ky,160,"Rider",null,["- savedPlaces: List"],["+ requestRide()","+ rateDriver()"]);
+  var driver=box(180,ky,160,"Driver",null,["- licenseNo: String","- rating: float"],["+ acceptRide()","+ goOnline()"]);
+  user.cx=(rider.cx+driver.cx)/2; // keep parent centred over its children
+  var uBox=u.children[0]; // shift parent group to the new centre
+  uBox.setAttribute("transform","translate("+(user.cx-(user.x+user.w/2))+",0)");
+  user.x=user.cx-user.w/2;
+  inherit(user,[rider,driver]);
+
+  var veh=box(596,10,220,"Vehicle","abstract",["- plateNo: String","- capacity: int","- baseFare: float"],["+ calculateFare(km, min) {abstract}","+ getType()"],true);
+  var vy=veh.b+54;
+  var bike=box(490,vy,136,"Bike",null,["- helmets: int"],["+ calculateFare()"]);
+  var auto=box(642,vy,136,"Auto",null,["- meterType: String"],["+ calculateFare()"]);
+  var cab=box(794,vy,136,"Cab",null,["- seats: int"],["+ calculateFare()"]);
+  inherit(veh,[bike,auto,cab]);
+
+  var rideY=Math.max(rider.b,driver.b,cab.b)+64;
+  var ride=box(330,rideY,260,"Ride",null,["- rideId: String","- pickup, drop: Location","- status: RideStatus","- vehicle: Vehicle","- payment: Payment"],["+ assignDriver()","+ estimateFare(): float","+ complete()"]);
+  var ry=rideY+90;
+  // Rider -> Ride
+  path("M"+rider.cx+","+rider.b+" V"+ry+" H"+ride.x);
+  label(rider.cx+6,rider.b+16,"1"); label(rider.cx+6,ry-6,"requests"); label(ride.x-6,ry-6,"0..*","end");
+  // Driver -> Ride
+  var dy=ry+36;
+  path("M"+driver.cx+","+driver.b+" V"+dy+" H"+ride.x);
+  label(driver.cx+6,driver.b+16,"1"); label(driver.cx+6,dy-6,"serves"); label(ride.x-6,dy-6,"0..*","end");
+  // Vehicle <- Ride
+  var ex=946, vyc=veh.y+30;
+  path("M"+ride.r+","+(ry)+" H"+ex+" V"+vyc+" H"+veh.r);
+  label(ride.r+6,ry-6,"0..*"); label(ex-6,ry-8,"uses","end"); label(veh.r+6,vyc-6,"1");
+
+  var pay=box(330,ride.b+66,260,"Payment","abstract",["- amount: float","- status: String"],["+ pay(amount) {abstract}","+ refund()"],true);
+  path("M"+ride.cx+","+ride.b+" V"+pay.y);
+  label(ride.cx+8,ride.b+16,"1"); label(ride.cx+8,pay.y-6,"1"); label(ride.cx+54,ride.b+36,"paid by");
+  var py=pay.b+54;
+  var cash=box(180,py,150,"CashPayment",null,[],["+ pay()"]);
+  var upi=box(345,py,150,"UpiPayment",null,["- upiId: String"],["+ pay()"]);
+  var card=box(510,py,160,"CardPayment",null,["- cardLast4: String"],["+ pay()"]);
+  pay.cx=upi.cx; var pg=u.lastChild;
+  inherit({cx:pay.cx,b:pay.b},[cash,upi,card]);
+
+  var maxB=Math.max(cash.b,upi.b,card.b)+14;
+  u.setAttribute("viewBox","0 0 960 "+maxB);
+})();
+</script>
+</body>
+</html>
